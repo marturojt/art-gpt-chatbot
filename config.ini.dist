@@ -1,0 +1,11 @@
+[database]
+host = YOUR_HOST
+port = YOUR_PORT
+database = YOUR_DATABASE
+username = YOUR_USERNAME
+password = YOUR_PASSWORD
+
+[misc-keys]
+openai_key = YOUR_OPENAI_KEY
+telegram_key = YOUR_TELEGRAM_BOT_KEY
+telegram_name = YOUR_TELEGRAM_BOT_NAME
