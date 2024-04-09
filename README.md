@@ -125,11 +125,19 @@ Once you have the telegram bot key and openai key, you need to copy tje data.py.
    ```sh
    git clone https://github.com/Buzz-Word-Comunicacion/gpt-demo-chatbot
    ```
-2. Install python packages
+2. Create a python virtual enviroment
+   ```sh
+   python -m venv .venv_bot
+   ```
+3. Activate the virtual env (command depents on OS)
+   ```sh
+   source .venv_bot/bin/activate
+   ```
+4. Install python packages
    ```sh
    pip install -r pip_install.txt
    ```
-3. Copy `config.ini.dist` to `config.ini` and enter your api keys and the database credentials
+5. Copy `config.ini.dist` to `config.ini` and enter your api keys and the database credentials
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
