@@ -58,7 +58,6 @@ def get_waifu_role_descriptions():
 
 # CHAT LOG OPERATIONS
 
-# Obtain the chat log for a user
 # def get_chat_log_user(user_id):
 #     chat_log = db_session.query(ChatLog).filter(ChatLog.relIdUser == user_id).all()
 #     chat_log_parsed = []
@@ -66,6 +65,8 @@ def get_waifu_role_descriptions():
 #         chat_log_parsed.append([chat.text])
 #     db_session.close()
 #     return chat_log_parsed
+
+# Obtain the chat log for a user
 def get_chat_log_user(user_id):
     # Subquery to get the last 20 rows in descending order
     subquery = db_session.query(ChatLog).filter(ChatLog.relIdUser == user_id).order_by(desc(ChatLog.idChatLog)).limit(20).subquery()
