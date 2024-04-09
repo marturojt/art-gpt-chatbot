@@ -1,5 +1,6 @@
 from .db_connection import db_session
 from models.asistant_models import Users, ChatLog, AsistantRoles
+from sqlalchemy import desc
 
 db_session = db_session()
 
@@ -58,12 +59,24 @@ def get_waifu_role_descriptions():
 # CHAT LOG OPERATIONS
 
 # Obtain the chat log for a user
+# def get_chat_log_user(user_id):
+#     chat_log = db_session.query(ChatLog).filter(ChatLog.relIdUser == user_id).all()
+#     chat_log_parsed = []
+#     for chat in chat_log:
+#         chat_log_parsed.append([chat.text])
+#     db_session.close()
+#     return chat_log_parsed
 def get_chat_log_user(user_id):
-    chat_log = db_session.query(ChatLog).filter(ChatLog.relIdUser == user_id).all()
+    # Subquery to get the last 20 rows in descending order
+    subquery = db_session.query(ChatLog).filter(ChatLog.relIdUser == user_id).order_by(desc(ChatLog.idChatLog)).limit(20).subquery()
+
+    # Query to sort the subquery result in ascending order
+    chat_log = db_session.query(subquery.c.text).order_by(subquery.c.idChatLog.asc()).all()
     chat_log_parsed = []
+
     for chat in chat_log:
         chat_log_parsed.append([chat.text])
-    db_session.close()
+    
     return chat_log_parsed
 
 # Add a new chat log entry
