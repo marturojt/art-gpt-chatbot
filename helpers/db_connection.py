@@ -13,7 +13,11 @@ config.read("config.ini")                                               # databa
 
 # Database connection settings
 connection_string = f'mysql+mysqlconnector://{config["database"]["username"]}:{config["database"]["password"]}@{config["database"]["host"]}/{config["database"]["database"]}'
-engine = create_engine(connection_string)
+engine = create_engine(
+    connection_string,
+    pool_pre_ping=True,
+    pool_recycle=3600
+    )
 
 # Create database if it does not exist.
 if not database_exists(engine.url):
