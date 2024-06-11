@@ -1,5 +1,5 @@
 from .db_connection import db_session
-from models.asistant_models import Users, ChatLog, AsistantRoles
+from models.asistant_models import Users, ChatLog, AsistantRoles, UserThreads
 from sqlalchemy import desc
 
 db_session = db_session()
@@ -86,3 +86,17 @@ def new_chat_log_entry(user_id, text, timestamp):
     db_session.add(new_chat_log_entry)
     db_session.commit()
     db_session.close()
+
+
+# Add user-thread relationship
+def new_user_thread(user_id, thread_id):
+    new_user_thread = UserThreads(user_id=user_id, thread_id=thread_id)
+    db_session.add(new_user_thread)
+    db_session.commit()
+    db_session.close()
+
+# Get user-thread relationship
+def get_user_thread(user_id):
+    user_thread = db_session.query(UserThreads).filter(UserThreads.user_id == user_id).first()
+    db_session.close()
+    return user_thread

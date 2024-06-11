@@ -28,3 +28,11 @@ class AsistantRoles(Base):
     idAsistantRole = Column(Integer, primary_key=True)
     AsistantRole = Column(Text)
     AsistantRoleDescription = Column(String(length=255))
+
+
+class UserThreads(Base):
+    __tablename__ = "tb_user_threads"
+
+    idUserThread = Column(Integer, primary_key=True)
+    user_id = Column(Integer)
+    thread_id = Column(String(length=255))

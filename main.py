@@ -14,7 +14,7 @@ from aiogram.fsm.context import FSMContext
 
 
 # import the keep_alive function from the helpers module and variables from the data module
-from helpers import keep_alive, chat_openai_nutribot, search_user, new_user
+from helpers import keep_alive, chat_openai_nutribot, search_user, new_user, chat_assitant_nutribot
 
 # Import variables from config file
 config = configparser.ConfigParser()
@@ -57,11 +57,15 @@ async def gpt(message: Message):
     """
 
     user_db = search_user(message.from_user.id)
-    if (user_db is None):
+    if user_db is None:
         new_user(message.from_user.id, message.from_user.full_name)
+        user_name, user_id = message.from_user.full_name, message.from_user.id
     else:
-        response_txt = chat_openai_nutribot(message.text, user_db.name, user_db.idUser)
-        await message.answer(response_txt)
+        user_name, user_id = user_db.name, user_db.idUser
+
+    # response_txt = chat_openai_nutribot(message.text, user_name, user_id)
+    response_txt = chat_assitant_nutribot(message.text, user_name, user_id)
+    await message.answer(response_txt)
 
 
 

@@ -5,7 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy_utils import database_exists, create_database
 
-from models.asistant_models import Base, Users, ChatLog, AsistantRoles      # database models
+from models.asistant_models import Base, Users, ChatLog, AsistantRoles, UserThreads      # database models
 
 # Import variables from config file
 config = configparser.ConfigParser()
