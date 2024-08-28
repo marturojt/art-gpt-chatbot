@@ -4,7 +4,7 @@ import sys
 import configparser
 from os import getenv
 
-from aiogram import Bot, Dispatcher, html, types
+from aiogram import Bot, Dispatcher, html, types, md
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart, Command, CommandObject
@@ -38,7 +38,7 @@ async def command_start_handler(message: Message) -> None:
         message (types.Message): The message received from the user in the chat
     """
     # await message.answer(f"Hola, {html.bold(message.from_user.full_name)}!")
-    await message.answer("Soy Nutribot, tu asistente de nutrición y estare encantado de ayudarte con tus dudas sobre nutrición y salud.")
+    await message.answer("Soy Art-Finnancial-Assistant, tu asistente de finanzas y estare encantado de ayudarte con tus dudas sobre el uso de tu dinero y productos financieros.")
 
     user_db = search_user(message.from_user.id)
 
@@ -65,7 +65,10 @@ async def gpt(message: Message):
 
     # response_txt = chat_openai_nutribot(message.text, user_name, user_id)
     response_txt = chat_assitant_nutribot(message.text, user_name, user_id)
-    await message.answer(response_txt)
+    
+    
+    await message.answer(response_txt, parse_mode=ParseMode.MARKDOWN)
+    # await message.answer(response_txt)
 
 
 
