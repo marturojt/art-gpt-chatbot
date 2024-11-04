@@ -225,8 +225,7 @@ async def optimize_image(photo_path: str) -> str:
             img = img.resize((new_width, new_height))
 
         # Save the optimized image to a new file
-        optimized_image_path = f"downloads/optimized_{
-            os.path.basename(photo_path)}"
+        optimized_image_path = f"downloads/optimized_{os.path.basename(photo_path)}"
         img.save(optimized_image_path, "JPEG", optimize=True, quality=85)
 
         return optimized_image_path
