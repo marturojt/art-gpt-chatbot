@@ -10,3 +10,6 @@ openai_key = YOUR_OPENAI_KEY
 assistant_id = YOUR_ASSITANT_ID
 telegram_key = YOUR_TELEGRAM_BOT_KEY
 telegram_name = YOUR_TELEGRAM_BOT_NAME
+
+[messages]
+welcome_message = YOUR_WELCOME_MESSAGE

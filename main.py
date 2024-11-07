@@ -43,8 +43,7 @@ async def command_start_handler(message: Message) -> None:
     Returns:
         None
     """
-
-    await message.answer("Soy ArtFinBot, tu asistente de finanzas y estare encantado de ayudarte con tus dudas sobre el uso de tu dinero y productos financieros.")
+    await message.answer(config["messages"]["welcome_message"])
 
     user_db = search_user(message.from_user.id)
 
