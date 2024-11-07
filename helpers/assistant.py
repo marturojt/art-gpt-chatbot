@@ -25,15 +25,11 @@ my_assistant = client.beta.assistants.retrieve(
     config["misc-keys"]["assistant_id"])
 
 # Create thread func
-
-
 def create_thread():
     my_thread = client.beta.threads.create()  # create empty thread
     return my_thread.id
 
 # Run assistant func
-
-
 def run_assistant(thread_id: str):
     """
     Runs the assistant for a given thread.
@@ -42,6 +38,7 @@ def run_assistant(thread_id: str):
     Returns:
         my_run: The result of the assistant run.
     """
+
     my_run = client.beta.threads.runs.create(
         assistant_id=my_assistant.id,
         thread_id=thread_id,
@@ -51,8 +48,6 @@ def run_assistant(thread_id: str):
     return my_run
 
 # Retrieve run status func
-
-
 def retrieve_run_status(thread_id: str, run_id: str):
     """
     Retrieve the status of a specific run within a thread.
@@ -64,6 +59,7 @@ def retrieve_run_status(thread_id: str, run_id: str):
     Returns:
         dict: The status information of the specified run.
     """
+    
     keep_retrieving_run = client.beta.threads.runs.retrieve(
         thread_id=thread_id,
         run_id=run_id
@@ -71,8 +67,6 @@ def retrieve_run_status(thread_id: str, run_id: str):
     return keep_retrieving_run
 
 # Chat assistant text func
-
-
 async def chat_assistant_text(message: str, user_name: str, user_id: int):
     """
     Asynchronously handles a chat message from a user, processes it through an assistant, and retrieves the assistant's response.
@@ -120,21 +114,18 @@ async def chat_assistant_text(message: str, user_name: str, user_id: int):
             return "Error"
 
 # Chat assistant photo func
-
-
-async def chat_assistant_photo(photo: str, user_name: str, user_id: int):
+async def chat_assistant_photos(photos: list, user_name: str, user_id: int) -> str:
     """
-    Processes a photo by optimizing it, uploading it to a files API, and then 
-    analyzing it in the context of an ongoing conversation thread.
+    Processes a list of photos, optimizes them, uploads them to a file service, 
+    and interacts with a chat assistant to provide information about the images.
     Args:
-        photo (str): The file path of the photo to be processed.
+        photos (list): A list of file paths to the photos to be processed.
         user_name (str): The name of the user.
-        user_id (int): The unique identifier of the user.
+        user_id (int): The ID of the user.
     Returns:
-        str: The assistant's response based on the analysis of the photo.
-        If an error occurs, returns "Error processing photo".
+        str: The response from the chat assistant, or an error message if something goes wrong.
     Raises:
-        Exception: If there is an error during the processing of the photo.
+        Exception: If there is an error during the processing of photos.
     """
 
     # validate if user has active thread
@@ -147,32 +138,42 @@ async def chat_assistant_photo(photo: str, user_name: str, user_id: int):
         new_user_thread(user_id, thread_id)
 
     try:
-        # Optimize the image
-        optimized_image_path = await optimize_image(photo)
+        optimized_image_paths = []
+        for photo in photos:
+            # Optimize the image
+            optimized_image_path = await optimize_image(photo)
+            optimized_image_paths.append(optimized_image_path)
 
-        # Upload the optimized image file to files api
-        with open(optimized_image_path, "rb") as image_file:
-            my_file = client.files.create(
-                file=image_file,
-                purpose="vision"
-            )
+        uploaded_files = []
+        for optimized_image_path in optimized_image_paths:
+            # Upload the optimized image file to files api
+            with open(optimized_image_path, "rb") as image_file:
+                my_file = client.files.create(
+                    file=image_file,
+                    purpose="vision"
+                )
+                uploaded_files.append(my_file.id)
 
-        # Add a Message to a Thread with the optimized image
+        # Create the message content with the uploaded images
+        message_content = [
+            {
+                "type": "text",
+                "text": "Toma información de las imágenes y continua relacionado la conversación que hemos tenido y las funciones para las que estas hecho. De ser posible, por favor, proporciona información sobre el contenido de las imágenes. Continua la conversación el idioma en el que se ha dado en los ultimos mensajes."
+            }
+        ]
+
+        for file_id in uploaded_files:
+            message_content.append({
+                "type": "image_file",
+                "image_file": {"file_id": file_id}
+            })
+
+        # Add a Message to a Thread with the optimized images
         my_thread_message = client.beta.threads.messages.create(
             thread_id=thread_id,
             role="user",
-            content=[
-                {
-                    "type": "text",
-                    "text": "Toma información de la imagen y continua relacionado la conversación que hemos tenido y las funciones para las que estas hecho. De ser posible, por favor, proporciona información sobre el contenido de la imagen. Continua la conversación el idioma en el que se ha dado en los ultimos mensajes."
-                },
-                {
-                    "type": "image_file",
-                    "image_file": {"file_id": my_file.id}
-                }
-            ]
+            content=message_content
         )
-        # TODO: Add a message to the thread with the image, but get the text from the config file
 
         # Run the assistant
         my_run = run_assistant(thread_id)
@@ -192,10 +193,10 @@ async def chat_assistant_photo(photo: str, user_name: str, user_id: int):
                 return "Error"
 
     except Exception as e:
-        print(f"Error processing photo: {e}")
-        return "Error processing photo"
+        print(f"Error processing photos: {e}")
+        return "Error processing photos"
 
-
+# Optimize image func
 async def optimize_image(photo_path: str) -> str:
     """
     Optimize an image by resizing it while maintaining its aspect ratio and saving it in JPEG format with optimization.
@@ -213,7 +214,7 @@ async def optimize_image(photo_path: str) -> str:
         img = img.convert("RGB")  # Ensure the image is in RGB mode
 
         # Resize the image while maintaining aspect ratio
-        max_dimension = 1024  # Set your desired maximum dimension
+        max_dimension = 512  # Set your desired maximum dimension
         width, height = img.size
         if width > max_dimension or height > max_dimension:
             if width > height:

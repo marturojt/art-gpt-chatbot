@@ -39,3 +39,4 @@ typing_extensions==4.11.0
 Werkzeug==3.0.2
 yarl==1.9.4
 pillow
+pdf2image
