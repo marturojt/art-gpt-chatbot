@@ -41,8 +41,6 @@
     </ul>
 </div>
 
-
-
 <!-- TABLE OF CONTENTS -->
 <details>
   <summary>Table of Contents</summary>
@@ -61,13 +59,10 @@
   </ol>
 </details>
 
-
-
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
 [![Product Name Screen Shot][product-screenshot]](https://example.com)
-
 
 Why the Project Exists:
 
@@ -85,24 +80,12 @@ We are confident that our nutritional and health assistant can make a meaningful
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 ### Built With
 
 [![Python][Python.org]][Python-url]  
 [![Love][LoveBadge]][Python-url]
 
-<!-- * [![React][React.js]][React-url]
-* [![Vue][Vue.js]][Vue-url]
-* [![Angular][Angular.io]][Angular-url]
-* [![Svelte][Svelte.dev]][Svelte-url]
-* [![Laravel][Laravel.com]][Laravel-url]
-* [![Bootstrap][Bootstrap.com]][Bootstrap-url]
-* [![JQuery][JQuery.com]][JQuery-url] -->
-
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 <!-- GETTING STARTED -->
 ## Getting Started
@@ -117,7 +100,7 @@ To get started with your Python Telegram bot project, you will need the followin
 
 There are a lot of examples and documentation about creating a bot using the bot father ([Botfather](https://t.me/botfather))
 
-Once you have the telegram bot key and openai key, you need to copy tje data.py.dist file and fill the file with your api keys. The connection info for MySQL server need to be in this file too.
+Once you have the telegram bot key and openai key, you need to copy the `config.ini.dist` file and fill the file with your API keys. The connection info for MySQL server needs to be in this file too.
 
 ### Installation
 
@@ -147,7 +130,7 @@ Once you have the telegram bot key and openai key, you need to copy tje data.py.
 
 - [x] Create a basic bot
 - [x] Set conversation history
-- [ ] Add the capability to send photos
+- [x] Add the capability to send photos
 - [ ] Add the capability to send audios
 - [ ] Multi-language Support
     - [ ] English
@@ -191,13 +174,10 @@ Distributed under the MIT License. See `LICENSE` for more information.
 ## Contact
 
 - Arturo Jiménez - arturo.jimenez@grupocsi.com
-- Luis Belmontes - luis.belmontes@grupocsi.com
 
 GPTDemoChatbot: [https://github.com/Buzz-Word-Comunicacion/gpt-demo-chatbot](https://github.com/Buzz-Word-Comunicacion/gpt-demo-chatbot)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 
 
