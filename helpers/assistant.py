@@ -234,3 +234,104 @@ async def optimize_image(photo_path: str) -> str:
     except Exception as e:
         print(f"Error optimizing image: {e}")
         return photo_path  # Return the original image if optimization fails
+
+
+# Handle user message func
+async def chat_with_func(message: str, user_name: str, user_id: int):
+
+
+    # validate if user has active thread
+    user_thread = get_user_thread(user_id)
+    if user_thread:
+        thread_id = user_thread.thread_id
+    else:
+        thread_id = create_thread()
+        # create new user thread (db record)
+        new_user_thread(user_id, thread_id)
+
+    # Add a Message to a Thread
+    my_thread_message = client.beta.threads.messages.create(
+        thread_id=thread_id,
+        role="user",
+        content=message,
+    )
+
+    # run the assistant
+    my_run = run_assistant(thread_id)
+
+    # Retrieve the status of the run
+    if my_run.status == 'queued' or my_run.status == 'in_progress':
+        response = manage_queued_status(my_run, thread_id)
+        return response
+    if my_run.status == 'completed':
+        messages = client.beta.threads.messages.list(
+            thread_id=thread_id
+        )
+        # No tool outputs to submit so we return the messages
+        response = {
+            "planJson": '', 
+            "planTxt": messages.data[0].content[0].text.value
+        }
+        return response["planTxt"]
+
+    # Define the list to store tool outputs
+    tool_outputs = []
+
+    # Loop through each tool in the required action section
+    for tool in my_run.required_action.submit_tool_outputs.tool_calls:
+        # Validate desired tool
+        if tool.function.name == "get_user_score":
+            tool_outputs.append({
+                "tool_call_id": tool.id,
+                "output": ""
+            })
+            responseJson = tool.function.arguments
+
+    
+    # Submit all tool outputs at once after collecting them in a list
+    if tool_outputs:
+        try:
+            my_run = client.beta.threads.runs.submit_tool_outputs_and_poll(
+                thread_id=thread_id,
+                run_id=my_run.id,
+                tool_outputs=tool_outputs
+            )
+            print("Tool outputs submitted successfully.")
+        except Exception as e:
+            print("Failed to submit tool outputs:", e)
+    else:
+        print("No tool outputs to submit.")
+        response = {
+            "planJson": '', 
+            "planTxt": ''
+        }
+        return response["planTxt"]
+        
+    if my_run.status == 'completed':
+        messages = client.beta.threads.messages.list(
+            thread_id=thread_id
+        )
+        responseMessage = messages.data[0].content[0].text.value
+
+    # Return the response
+    response = {
+        "planJson": responseJson,
+        "planTxt": responseMessage
+    }
+    return response["planTxt"]
+
+
+def manage_queued_status(my_run, thread_id):
+
+    while my_run.status in ["queued", "in_progress"]:
+        keep_retrieving_run = retrieve_run_status(thread_id, my_run.id)
+        if keep_retrieving_run.status == "completed":
+            # Retrieve the Messages added by the Assistant to the Thread
+            all_messages = client.beta.threads.messages.list(
+                thread_id=thread_id
+            )
+            return all_messages.data[0].content[0].text.value
+        elif keep_retrieving_run.status == "queued" or keep_retrieving_run.status == "in_progress":
+            pass
+        else:
+            return "Error"

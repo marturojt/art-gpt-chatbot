@@ -16,7 +16,7 @@ from aiogram.utils import markdown as md
 from pdf2image import convert_from_path
 
 # import the keep_alive function from the helpers module and variables from the data module
-from helpers import keep_alive, search_user, new_user, chat_assistant_text, chat_assistant_photos
+from helpers import keep_alive, search_user, new_user, chat_assistant_text, chat_assistant_photos, chat_with_func
 
 # Import variables from config file
 config = configparser.ConfigParser()
@@ -79,7 +79,8 @@ async def gpt(message: types.Message):
 
     # validate message content type
     if message.content_type == ContentType.TEXT:
-        response_txt = await chat_assistant_text(message.text, user_name, user_id)
+        # response_txt = await chat_assistant_text(message.text, user_name, user_id)
+        response_txt = await chat_with_func(message.text, user_name, user_id)
         await message.answer(response_txt, parse_mode=ParseMode.MARKDOWN)
     elif message.content_type == ContentType.PHOTO:
         response_txt = await handle_photo(message, user_name, user_id)
