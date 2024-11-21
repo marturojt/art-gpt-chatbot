@@ -158,7 +158,7 @@ async def chat_assistant_photos(photos: list, user_name: str, user_id: int) -> s
         message_content = [
             {
                 "type": "text",
-                "text": "Toma información de las imágenes y continua relacionado la conversación que hemos tenido y las funciones para las que estas hecho. De ser posible, por favor, proporciona información sobre el contenido de las imágenes. Continua la conversación el idioma en el que se ha dado en los ultimos mensajes. Si la imagen es una identificación extrae el nombre completo y la fecha de nacimiento y continua con ello la convesación."
+                "text": "Toma información de las imágenes y en caso de que la imagen sea una identificación extrae el nombre completo y la fecha de nacimiento y continua con ello la convesación, de lo contrario continua relacionado la conversación que hemos tenido con la imagen  y las funciones para las que estas hecho. De ser posible, por favor, proporciona información sobre el contenido de las imágenes. Continua la conversación el idioma en el que se ha dado en los ultimos mensajes."
             }
         ]
 
