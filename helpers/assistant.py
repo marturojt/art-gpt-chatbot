@@ -5,6 +5,7 @@ import base64
 import io
 import os
 import uuid
+import random
 from PIL import Image
 from openai import OpenAI
 from aiogram.types import Message, BotCommand, ContentType
@@ -38,8 +39,8 @@ def run_assistant(thread_id: str):
     Returns:
         my_run: The result of the assistant run.
     """
-
-    my_run = client.beta.threads.runs.create(
+    # my_run = client.beta.threads.runs.create(
+    my_run = client.beta.threads.runs.create_and_poll(
         assistant_id=my_assistant.id,
         thread_id=thread_id,
 
@@ -59,7 +60,6 @@ def retrieve_run_status(thread_id: str, run_id: str):
     Returns:
         dict: The status information of the specified run.
     """
-    
     keep_retrieving_run = client.beta.threads.runs.retrieve(
         thread_id=thread_id,
         run_id=run_id
@@ -158,7 +158,7 @@ async def chat_assistant_photos(photos: list, user_name: str, user_id: int) -> s
         message_content = [
             {
                 "type": "text",
-                "text": "Toma información de las imágenes y continua relacionado la conversación que hemos tenido y las funciones para las que estas hecho. De ser posible, por favor, proporciona información sobre el contenido de las imágenes. Continua la conversación el idioma en el que se ha dado en los ultimos mensajes."
+                "text": "Toma información de las imágenes y continua relacionado la conversación que hemos tenido y las funciones para las que estas hecho. De ser posible, por favor, proporciona información sobre el contenido de las imágenes. Continua la conversación el idioma en el que se ha dado en los ultimos mensajes. Si la imagen es una identificación extrae el nombre completo y la fecha de nacimiento y continua con ello la convesación."
             }
         ]
 
@@ -178,19 +178,65 @@ async def chat_assistant_photos(photos: list, user_name: str, user_id: int) -> s
         # Run the assistant
         my_run = run_assistant(thread_id)
 
-        # Loop until get any response
-        while my_run.status in ["queued", "in_progress"]:
-            keep_retrieving_run = retrieve_run_status(thread_id, my_run.id)
-            if keep_retrieving_run.status == "completed":
-                # Retrieve the Messages added by the Assistant to the Thread
-                all_messages = client.beta.threads.messages.list(
-                    thread_id=thread_id
+        # # Retrieve the status of the run
+        # if my_run.status == 'queued' or my_run.status == 'in_progress':
+        #     response = manage_queued_status(my_run, thread_id)
+        #     return response
+        if my_run.status == 'completed':
+            messages = client.beta.threads.messages.list(
+                thread_id=thread_id
+            )
+            # No tool outputs to submit so we return the messages
+            response = {
+                "planJson": '',
+                "planTxt": messages.data[0].content[0].text.value
+            }
+            return response["planTxt"]
+
+        # Define the list to store tool outputs
+        tool_outputs = []
+
+        # Loop through each tool in the required action section
+        for tool in my_run.required_action.submit_tool_outputs.tool_calls:
+            # Validate desired tool
+            if tool.function.name == "get_preapproval":
+                tool_outputs.append({
+                    "tool_call_id": tool.id,
+                    "output": pre_aprobacion()
+                })
+                responseJson = tool.function.arguments
+
+        # Submit all tool outputs at once after collecting them in a list
+        if tool_outputs:
+            try:
+                my_run = client.beta.threads.runs.submit_tool_outputs_and_poll(
+                    thread_id=thread_id,
+                    run_id=my_run.id,
+                    tool_outputs=tool_outputs
                 )
-                return all_messages.data[0].content[0].text.value
-            elif keep_retrieving_run.status == "queued" or keep_retrieving_run.status == "in_progress":
-                pass
-            else:
-                return "Error"
+                print("Tool outputs submitted successfully.")
+            except Exception as e:
+                print("Failed to submit tool outputs:", e)
+        else:
+            print("No tool outputs to submit.")
+            response = {
+                "planJson": '',
+                "planTxt": ''
+            }
+            return response["planTxt"]
+
+        if my_run.status == 'completed':
+            messages = client.beta.threads.messages.list(
+                thread_id=thread_id
+            )
+            responseMessage = messages.data[0].content[0].text.value
+
+        # Return the response
+        response = {
+            "planJson": responseJson,
+            "planTxt": responseMessage
+        }
+        return response["planTxt"]
 
     except Exception as e:
         print(f"Error processing photos: {e}")
@@ -226,7 +272,8 @@ async def optimize_image(photo_path: str) -> str:
             img = img.resize((new_width, new_height))
 
         # Save the optimized image to a new file
-        optimized_image_path = f"downloads/optimized_{os.path.basename(photo_path)}"
+        optimized_image_path = f"downloads/optimized_{
+            os.path.basename(photo_path)}"
         img.save(optimized_image_path, "JPEG", optimize=True, quality=85)
 
         return optimized_image_path
@@ -238,7 +285,6 @@ async def optimize_image(photo_path: str) -> str:
 
 # Handle user message func
 async def chat_with_func(message: str, user_name: str, user_id: int):
-
 
     # validate if user has active thread
     user_thread = get_user_thread(user_id)
@@ -259,17 +305,17 @@ async def chat_with_func(message: str, user_name: str, user_id: int):
     # run the assistant
     my_run = run_assistant(thread_id)
 
-    # Retrieve the status of the run
-    if my_run.status == 'queued' or my_run.status == 'in_progress':
-        response = manage_queued_status(my_run, thread_id)
-        return response
+    # # Retrieve the status of the run
+    # if my_run.status == 'queued' or my_run.status == 'in_progress':
+    #     response = manage_queued_status(my_run, thread_id)
+    #     return response
     if my_run.status == 'completed':
         messages = client.beta.threads.messages.list(
             thread_id=thread_id
         )
         # No tool outputs to submit so we return the messages
         response = {
-            "planJson": '', 
+            "planJson": '',
             "planTxt": messages.data[0].content[0].text.value
         }
         return response["planTxt"]
@@ -280,14 +326,13 @@ async def chat_with_func(message: str, user_name: str, user_id: int):
     # Loop through each tool in the required action section
     for tool in my_run.required_action.submit_tool_outputs.tool_calls:
         # Validate desired tool
-        if tool.function.name == "get_user_score":
+        if tool.function.name == "get_preapproval":
             tool_outputs.append({
                 "tool_call_id": tool.id,
-                "output": ""
+                "output": pre_aprobacion()
             })
             responseJson = tool.function.arguments
 
-    
     # Submit all tool outputs at once after collecting them in a list
     if tool_outputs:
         try:
@@ -302,11 +347,11 @@ async def chat_with_func(message: str, user_name: str, user_id: int):
     else:
         print("No tool outputs to submit.")
         response = {
-            "planJson": '', 
+            "planJson": '',
             "planTxt": ''
         }
         return response["planTxt"]
-        
+
     if my_run.status == 'completed':
         messages = client.beta.threads.messages.list(
             thread_id=thread_id
@@ -335,3 +380,19 @@ def manage_queued_status(my_run, thread_id):
             pass
         else:
             return "Error"
+
+
+def pre_aprobacion():
+    """
+    Esta función simula un proceso de pre-aprobación que devuelve 
+    "preapproved" 9 de cada 10 veces y "declined" 2 de cada 10 veces.
+    """
+    if random.randint(1, 10) <= 9:  # Genera un número aleatorio entre 1 y 10
+        return "preapproved"          # Si el número es menor o igual que 9, pre-aprobado
+    else:
+        return "declined"            # Si el número es mayor que 8, rechazado
+
+
+# Ejemplo de uso
+resultado = pre_aprobacion()
+print(resultado)  # Imprime el resultado de la pre-aprobación
