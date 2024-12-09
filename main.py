@@ -77,12 +77,12 @@ async def command_infoTDC_handler(message: Message) -> None:
         reply_markup=keyboard
     )
     # await message.answer("🌟 ¡Impulsa tus finanzas con una *Tarjeta de Crédito HSBC*! \n Descubre los beneficios que HSBC tiene para ti:", reply_markup=keyboard)
-    # await message.answer("Quieres una TDC, dame tu nombre completo y fecha de nacimeiento")
+    # await message.answer("Quieres una TDC, dame tu nombre completo y fecha de nacimiento")
 
 # Command handler for /infoLOAN
 @dp.message(Command(BotCommand(command="infoloan", description="Show information about personal loans")))
 async def command_infoTDC_handler(message: Message) -> None:
-    await message.answer("Quieres un crédito personal, dame tu nombre completo y fecha de nacimeiento")
+    await message.answer("Quieres un crédito personal, dame tu nombre completo y fecha de nacimiento")
 
 # ChatGPT functionality
 @dp.message()
