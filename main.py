@@ -31,7 +31,7 @@ TOKEN = config["misc-keys"]["telegram_key"]
 
 # All handlers should be attached to the Router (or Dispatcher)
 dp = Dispatcher()
-bot = Bot(token=TOKEN)
+bot = Bot(token=TOKEN, parse_mode="MarkdownV2")
 
 # Command handlers for /start and /help
 @dp.message(Command(BotCommand(command="start", description="Start the bot and show welcome message")))
@@ -59,16 +59,22 @@ async def command_start_handler(message: Message) -> None:
 async def command_infoTDC_handler(message: Message) -> None:
     # Crear botones inline con callbacks
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="Opción 1", callback_data="option_1")],
-        [InlineKeyboardButton(text="Opción 2", callback_data="option_2")],
-        [InlineKeyboardButton(text="Cancelar", callback_data="cancel")]
+        [InlineKeyboardButton(text="Más información 📖", callback_data="more_info_tdc")],
+        [InlineKeyboardButton(text="La quiero! 🎉", callback_data="i_want_tdc")],
+        [InlineKeyboardButton(text="No, gracias. 🙏", callback_data="no_thanks_tdc")]
     ])
     photo_url = "https://via.placeholder.com/600x400.png?text=Ejemplo+de+Imagen"
+    caption_text = (
+        "🌟 ¡Impulsa tus finanzas con una *Tarjeta de Crédito HSBC*\\! \n Descubre los beneficios que HSBC tiene para ti:\n\n"
+        "\\- 💳 *HSBC Zero*: Sin comisión por administración de tarjeta del titular\\.\n"
+        "\\- 💳 *HSBC 2Now*: 2% de cashback en todas tus compras al instante\\.\n"
+        "\\- 💳 *HSBC VIVA*: Beneficios exclusivos para tus viajes\\."
+    )
     await bot.send_photo(
         chat_id=message.chat.id,
         photo=photo_url,
-        caption="🌟 ¡Impulsa tus finanzas con una *Tarjeta de Crédito HSBC*! \n Descubre los beneficios que HSBC tiene para ti:",  # Texto que acompaña la imagen
-        reply_markup=keyboard  # Teclado inline
+        caption= caption_text,
+        reply_markup=keyboard
     )
     # await message.answer("🌟 ¡Impulsa tus finanzas con una *Tarjeta de Crédito HSBC*! \n Descubre los beneficios que HSBC tiene para ti:", reply_markup=keyboard)
     # await message.answer("Quieres una TDC, dame tu nombre completo y fecha de nacimeiento")
@@ -150,7 +156,7 @@ async def handle_photo(message: types.Message, user_name: str, user_id: int) -> 
 async def handle_document(message: types.Message, user_name: str, user_id: int) -> str:
     """
     Handles the document sent by the user, processes it if it's a PDF, and returns a response.
-    Args:
+    Args: 
         message (types.Message): The message object containing the document.
         user_name (str): The name of the user who sent the document.
         user_id (int): The ID of the user who sent the document.
@@ -196,12 +202,39 @@ async def handle_document(message: types.Message, user_name: str, user_id: int) 
 async def handle_callback_query(callback_query: types.CallbackQuery):
     data = callback_query.data  # Datos del callback
 
-    if data == "option_1":
-        await callback_query.message.answer("Elegiste la opción 1.")
-    elif data == "option_2":
-        await callback_query.message.answer("Elegiste la opción 2.")
-    elif data == "cancel":
-        await callback_query.message.answer("Has cancelado la operación.")
+    if data == "more_info_tdc":
+        message_text = (
+            "💡 *Tarjetas de Crédito HSBC* ofrecen:\n\n"
+            "- *HSBC Zero*: Sin comisión por administración de tarjeta del titular. ([Más información](https://www.hsbc.com.mx/tarjetas-de-credito/productos/zero/)) \n"
+            "- *HSBC 2Now*: 2% de cashback en todas tus compras al instante. ([Más información](https://www.hsbc.com.mx/tarjetas-de-credito/productos/2now/)) \n"
+            "- *HSBC VIVA*: Beneficios exclusivos para tus viajes. ([Más información](https://www.hsbc.com.mx/tarjetas-de-credito/productos/)) \n\n"
+
+            "¿Te gustaría solicitar alguna de estas tarjetas?\n"
+        )
+        keyboard = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="La quiero! 🎉", callback_data="i_want_tdc")],
+            [InlineKeyboardButton(text="No, gracias. 🙏", callback_data="no_thanks_tdc")]
+        ])
+        await callback_query.message.answer(message_text, reply_markup=keyboard, parse_mode="Markdown")
+
+
+    elif data == "i_want_tdc":
+        message_text = (
+            "🎉 **¡Excelente elección!**  \n"
+            "Para solicitar tu Tarjeta de Crédito HSBC:  \n\n"
+            "- **En línea**: [Solicita tu tarjeta aquí](https://testflight.apple.com/v1/invite/b166c99e49d74adfaf13b0217d94e0fbc13f4dcd7bc14e15a377ed45b908d9fa18d9715bf?ct=L7UPZ62548&advp=10000&platform=ios). \n"
+            "- **Sucursal**: Visita la sucursal HSBC más cercana. \n"
+
+            "¿Necesitas asistencia adicional?"
+        )
+        await callback_query.message.answer(message_text, parse_mode="Markdown")
+    elif data == "no_thanks_tdc":
+        message_text = (
+            "😌 **¡Entendido!** \n"
+            "Si en el futuro deseas conocer más sobre nuestros productos, no dudes en contactarnos.  \n"
+            "¿Te gustaría explorar otros servicios de HSBC? Cuentame que necesitas."
+        )
+        await callback_query.message.answer(message_text, parse_mode="Markdown")
     else:
         await callback_query.message.answer("Opción no reconocida.")
     
@@ -210,7 +243,7 @@ async def handle_callback_query(callback_query: types.CallbackQuery):
 
 async def main() -> None:
     # Initialize Bot instance with default bot properties which will be passed to all API calls
-    bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.MARKDOWN))
+    bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.MARKDOWN_V2))
     # And the run events dispatching
     await dp.start_polling(bot)
 
