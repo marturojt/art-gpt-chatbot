@@ -4,14 +4,15 @@ import sys
 import configparser
 from os import getenv
 
-from aiogram import Bot, Dispatcher, html, types, md
+from aiogram import Bot, Dispatcher, html, types, md, Bot
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart, Command, CommandObject
-from aiogram.types import Message, BotCommand, ContentType
+from aiogram.types import Message, BotCommand, ContentType, InlineKeyboardMarkup, InlineKeyboardButton, InputFile
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 from aiogram.utils import markdown as md
+# from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardButton, InlineKeyboardMarkup
 
 from pdf2image import convert_from_path
 
@@ -30,6 +31,7 @@ TOKEN = config["misc-keys"]["telegram_key"]
 
 # All handlers should be attached to the Router (or Dispatcher)
 dp = Dispatcher()
+bot = Bot(token=TOKEN)
 
 # Command handlers for /start and /help
 @dp.message(Command(BotCommand(command="start", description="Start the bot and show welcome message")))
@@ -51,6 +53,30 @@ async def command_start_handler(message: Message) -> None:
         await message.answer("Hola de nuevo, " + user_db.name + "!")
     else:
         new_user(message.from_user.id, message.from_user.full_name)
+
+# Command handler for /infoTDC
+@dp.message(Command(BotCommand(command="infotdc", description="Show information about credit cards")))
+async def command_infoTDC_handler(message: Message) -> None:
+    # Crear botones inline con callbacks
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="Opción 1", callback_data="option_1")],
+        [InlineKeyboardButton(text="Opción 2", callback_data="option_2")],
+        [InlineKeyboardButton(text="Cancelar", callback_data="cancel")]
+    ])
+    photo_url = "https://via.placeholder.com/600x400.png?text=Ejemplo+de+Imagen"
+    await bot.send_photo(
+        chat_id=message.chat.id,
+        photo=photo_url,
+        caption="🌟 ¡Impulsa tus finanzas con una *Tarjeta de Crédito HSBC*! \n Descubre los beneficios que HSBC tiene para ti:",  # Texto que acompaña la imagen
+        reply_markup=keyboard  # Teclado inline
+    )
+    # await message.answer("🌟 ¡Impulsa tus finanzas con una *Tarjeta de Crédito HSBC*! \n Descubre los beneficios que HSBC tiene para ti:", reply_markup=keyboard)
+    # await message.answer("Quieres una TDC, dame tu nombre completo y fecha de nacimeiento")
+
+# Command handler for /infoLOAN
+@dp.message(Command(BotCommand(command="infoloan", description="Show information about personal loans")))
+async def command_infoTDC_handler(message: Message) -> None:
+    await message.answer("Quieres un crédito personal, dame tu nombre completo y fecha de nacimeiento")
 
 # ChatGPT functionality
 @dp.message()
@@ -164,6 +190,23 @@ async def handle_document(message: types.Message, user_name: str, user_id: int) 
     except Exception as e:
         print(f"Error processing document: {e}")
         return "Error processing document"
+
+# Manage callback queries from buttons
+@dp.callback_query()
+async def handle_callback_query(callback_query: types.CallbackQuery):
+    data = callback_query.data  # Datos del callback
+
+    if data == "option_1":
+        await callback_query.message.answer("Elegiste la opción 1.")
+    elif data == "option_2":
+        await callback_query.message.answer("Elegiste la opción 2.")
+    elif data == "cancel":
+        await callback_query.message.answer("Has cancelado la operación.")
+    else:
+        await callback_query.message.answer("Opción no reconocida.")
+    
+    # Confirmar que se procesó el callback para eliminar el círculo de espera en la UI
+    await callback_query.answer()
 
 async def main() -> None:
     # Initialize Bot instance with default bot properties which will be passed to all API calls
