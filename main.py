@@ -50,7 +50,7 @@ async def command_start_handler(message: Message) -> None:
     user_db = search_user(message.from_user.id)
 
     if user_db:
-        await message.answer("Hola de nuevo, " + user_db.name + "!")
+        await message.answer("Hola de nuevo, " + user_db.name )
     else:
         new_user(message.from_user.id, message.from_user.full_name)
 
