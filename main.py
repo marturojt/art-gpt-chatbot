@@ -63,7 +63,7 @@ async def command_infoTDC_handler(message: Message) -> None:
         [InlineKeyboardButton(text="La quiero! 🎉", callback_data="i_want_tdc")],
         [InlineKeyboardButton(text="No, gracias. 🙏", callback_data="no_thanks_tdc")]
     ])
-    photo_url = "https://via.placeholder.com/600x400.png?text=Ejemplo+de+Imagen"
+    photo_url = "https://www.hsbc.com.mx/content/dam/hsbc/mx/images/tarjetas/advance-platinum/advance-platinum.jpg"
     caption_text = (
         "🌟 ¡Impulsa tus finanzas con una *Tarjeta de Crédito HSBC*\\! \n Descubre los beneficios que HSBC tiene para ti:\n\n"
         "\\- 💳 *HSBC Zero*: Sin comisión por administración de tarjeta del titular\\.\n"
